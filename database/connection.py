@@ -8,7 +8,7 @@ from models.users import User
 class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = None
     DATABASE_NAME: Optional[str] = "mydb"
-    SECRET_KEY: Optional[str] = None
+    SECRET_KEY: Optional[str]
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 6  # 6 hour
     ALGORITHM = "HS256"
 

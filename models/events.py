@@ -5,6 +5,7 @@ from beanie import Document
 
 # 도큐먼트 입력을 위한 모델
 class Event(Document):
+    creator: Optional[str]
     title: str
     image: str
     description: str

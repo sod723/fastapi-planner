@@ -1,9 +1,9 @@
 from typing import List
 from beanie import PydanticObjectId
-from fastapi import APIRouter, Body, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status, Depends
 from database.connection import Database
 from models.events import Event, EventUpdate
-
+from auth.authenticate import authenticate
 
 event_router = APIRouter(
     tags=["Events"]
@@ -32,7 +32,8 @@ async def get_event(event_id: int) -> Event:
 
 # 이벤트 생성
 @event_router.post("/new")
-async def create_event(body: Event = Body(...)) -> dict:
+async def create_event(body: Event, user: str = Depends(authenticate)) -> dict:
+    body.creator = user
     await event_database.save(body)
     return {"message": "event created"}
 
@@ -44,7 +45,7 @@ async def delete_all_events() -> dict:
 
 # 특정 id 이벤트 삭제
 @event_router.delete("/{event_id}")
-async def delete_event(event_id: int) -> dict:
+async def delete_event(id: PydanticObjectId, user: str = Depends(authenticate)) -> dict:
     event = await event_database.delete(id)
     if not event:
         raise HTTPException(
@@ -57,7 +58,13 @@ async def delete_event(event_id: int) -> dict:
 
 # 이벤트 수정
 @event_router.put("/{id}", response_model=Event)
-async def update_event(id: PydanticObjectId, body: EventUpdate) -> Event:
+async def update_event(id: PydanticObjectId, body: EventUpdate, user: str = Depends(authenticate)) -> Event:
+    event = await event_database.get(id)
+    if event.creator != user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Operation not allowed"
+        )
     updated_event = await event_database.update(id, body)
     if not updated_event:
         raise HTTPException(
@@ -65,3 +72,4 @@ async def update_event(id: PydanticObjectId, body: EventUpdate) -> Event:
             detail="Event with supplied ID does not exist"
         )
     return updated_event
+
