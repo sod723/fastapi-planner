@@ -8,6 +8,9 @@ from models.users import User
 class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = None
     DATABASE_NAME: Optional[str] = "mydb"
+    SECRET_KEY: Optional[str] = None
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 6  # 6 hour
+    ALGORITHM = "HS256"
 
     async def init_database(self):
         client = AsyncIOMotorClient(self.DATABASE_URL)
