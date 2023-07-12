@@ -37,6 +37,11 @@ async def signin(data: UserSignIn) -> dict:
 
 #모든 사용자 이메일, 패스워드, 태그 출력
 @user_router.get("/findall")
-async def get_users() -> List[dict]:
+async def get_all_users() -> List[dict]:
     users = await User.find_all().to_list() #비동기연산
     return [user.dict() for user in users]
+
+@user_router.get("/", response_model=List[User])
+async def get_all_users2() -> List[User]:
+    users = await user_database.get_all()
+    return users
